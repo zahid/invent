@@ -1,0 +1,11 @@
+{
+  "name": "invent",
+  "description": "vagrant setup generator",
+  "version": "0.0.1",
+  "author": "Zahid Mahir <zahid@zmhr.me>",
+  "repository": "git@github.com:zahid/invent.git",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "preferGlobal": true
+}
