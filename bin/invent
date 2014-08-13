@@ -11,28 +11,21 @@ var https = require('https');
 var zlib = require('zlib');
 
 var pkg = require('../package.json');
-
 var version = pkg.version;
+var eol = os.EOL
 
 program
   .version(version)
   .usage('[options] [dir]')
-  // -n for node-mongo -d for drupal?
   .option('-f, --force', 'force on non-empty directory')
   .parse(process.argv);
+  // -n for node-mongo ?
+  // -d for drupal?
 
 var destinationPath = program.args.shift() || '.';
-var cookbookPath = destinationPath + '/cookbooks/';
-
+var cookbookPath = path.join(destinationPath, 'cookbooks');
+var templatePath = path.join(__dirname, '..', 'templates');
 var appName = path.basename(path.resolve(destinationPath));
-
-var eol = os.EOL
-
-function loadTemplate(name) {
-  return fs.readFileSync(path.join(__dirname, '..', 'templates', name), 'utf-8');
-}
-
-var vagrantfile = loadTemplate('Vagrantfile').replace('{invent}', appName);
 
 (function createApplication(path) {
   emptyDirectory(path, function(empty){
@@ -57,29 +50,33 @@ var vagrantfile = loadTemplate('Vagrantfile').replace('{invent}', appName);
  * @param {String} path
  */
 
-function createApplicationAt(path) {
+function createApplicationAt(directory) {
   process.on('exit', function(){
     console.log();
-    console.log('   provision vagrant:');
-    console.log('     $ cd %s && vagrant up', path);
+    console.log('   getting started :');
+    console.log('     $ cd ' + directory + ' && vagrant up');
+    console.log('     $ vagrant ssh');
     console.log();
     console.log('   \x1b[36mstart inventing ;)\x1b[0m');
     console.log();
   });
 
-  mkdir(path, function(){
-    mkdir(path + '/cookbooks');
-    
-    var pkg = {
-      name: appName,
-      version: '0.0.1',
-      private: true
-    };
-
-    write(path + '/package.json', JSON.stringify(pkg, null, 2));
-    write(path + '/Vagrantfile', vagrantfile);
-    
+  mkdir(directory, function(){
+    loadTemplates();
     downloadCookbooks();
+  });
+}
+
+function loadTemplates() {
+  fs.readdir(templatePath, function(err, files){
+    if (err) {
+      console.log(err);
+    } else {
+      files.forEach(function(name) {
+        var templateContent = fs.readFileSync(path.join(__dirname, '..', 'templates', name), 'utf-8').replace('{appName}', appName);
+        write(path.join(destinationPath, name), templateContent);
+      });
+    } 
   });
 }
 
@@ -129,16 +126,8 @@ function mkdir(path, fn) {
 }
 
 function downloadCookbooks() {
-  var cookbooks = {
-    'nodejs' : 'https://github.com/mdxp/nodejs-cookbook/tarball/master',
-    'apt' : 'https://github.com/opscode-cookbooks/apt/tarball/master',
-    'yum-epel' : 'https://github.com/opscode-cookbooks/yum-epel/tarball/master',
-    'yum' : 'https://github.com/opscode-cookbooks/yum/tarball/master',
-    'build-essential' : 'https://github.com/opscode-cookbooks/build-essential/tarball/master',
-    'mongodb' : 'https://github.com/edelight/chef-mongodb/tarball/master',
-    'python' : 'https://github.com/poise/python/tarball/master',
-    'runit' : 'https://github.com/hw-cookbooks/runit/tarball/master'
-  };
+  mkdir(path.join(destinationPath, 'cookbooks'));
+  var cookbooks = require(path.join(__dirname, '..', 'config', 'cookbooks.json'));
   for(var book in cookbooks) {
     download(cookbooks[book], cookbookPath + book + '.tar.gz', function(error, path) {
       if(!error) {
@@ -150,14 +139,12 @@ function downloadCookbooks() {
   }
 }
 
-function cleanup(source, destination, cb) {
-
-}
+function cleanup(source, destination, cb) { /* rename cookbooks and delete tar.gzs */ }
 
 function extract(source, destination, cb) {
   fs.createReadStream(source)
     .pipe(zlib.createGunzip())
-    .pipe(tar.Extract({ path: destination}))
+    .pipe(tar.Extract({ path : destination}))
     .on('error', function(error) { cb(error, destination)})
     .on('end', function() { cb(null, destination)})
 }
@@ -167,7 +154,7 @@ function download(url, path, cb) {
     var data = [], dataLen = 0; 
     var headers = JSON.stringify(response.headers);
     switch(response.statusCode) {
-      case 200:
+      case 200 :
         var file = fs.createWriteStream(path);
         response.pipe(file);
         response.on('end', function() {
@@ -175,13 +162,13 @@ function download(url, path, cb) {
           cb(null, path);
         });
         break;
-      case 301:
-      case 302:
-      case 303:
-      case 307:
+      case 301 :
+      case 302 :
+      case 303 :
+      case 307 :
         download(response.headers.location, path, cb);
         break;
-      default:
+      default :
         cb(new Error('Server responded with status code ' + response.statusCode), path);
     }
   })
