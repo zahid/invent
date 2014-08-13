@@ -1,5 +1,5 @@
-name = '{invent}'
-ip = '192.168.123.125'
+name = '{appName}'
+ip = '192.168.111.111'
 box = 'saucy64'
 box_url = 'http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-13.10_chef-provisionerless.box'
 
