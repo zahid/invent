@@ -1,0 +1,202 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var mkdirp = require('mkdirp');
+var tar = require('tar');
+
+var os = require('os');
+var fs = require('fs');
+var path = require('path');
+var https = require('https');
+var zlib = require('zlib');
+
+var pkg = require('../package.json');
+
+var version = pkg.version;
+
+program
+  .version(version)
+  .usage('[options] [dir]')
+  // -n for node-mongo -d for drupal?
+  .option('-f, --force', 'force on non-empty directory')
+  .parse(process.argv);
+
+var destinationPath = program.args.shift() || '.';
+var cookbookPath = destinationPath + '/cookbooks/';
+
+var appName = path.basename(path.resolve(destinationPath));
+
+var eol = os.EOL
+
+function loadTemplate(name) {
+  return fs.readFileSync(path.join(__dirname, '..', 'templates', name), 'utf-8');
+}
+
+var vagrantfile = loadTemplate('Vagrantfile').replace('{invent}', appName);
+
+(function createApplication(path) {
+  emptyDirectory(path, function(empty){
+    if (empty || program.force) {
+      createApplicationAt(path);
+    } else {
+      program.confirm('destination is not empty, continue? ', function(ok){
+        if (ok) {
+          process.stdin.destroy();
+          createApplicationAt(path);
+        } else {
+          abort('aborting');
+        }
+      });
+    }
+  });
+})(destinationPath);
+
+/**
+ * Create application at the given directory `path`.
+ *
+ * @param {String} path
+ */
+
+function createApplicationAt(path) {
+  process.on('exit', function(){
+    console.log();
+    console.log('   provision vagrant:');
+    console.log('     $ cd %s && vagrant up', path);
+    console.log();
+    console.log('   \x1b[36mstart inventing ;)\x1b[0m');
+    console.log();
+  });
+
+  mkdir(path, function(){
+    mkdir(path + '/cookbooks');
+    
+    var pkg = {
+      name: appName,
+      version: '0.0.1',
+      private: true
+    };
+
+    write(path + '/package.json', JSON.stringify(pkg, null, 2));
+    write(path + '/Vagrantfile', vagrantfile);
+    
+    downloadCookbooks();
+  });
+}
+
+/**
+ * Check if the given directory `path` is empty.
+ *
+ * @param {String} path
+ * @param {Function} fn
+ */
+
+function emptyDirectory(path, fn) {
+  fs.readdir(path, function(err, files){
+    if (err && 'ENOENT' != err.code) {
+      throw err;
+    }
+    fn(!files || !files.length);
+  });
+}
+
+/**
+ * echo str > path.
+ *
+ * @param {String} path
+ * @param {String} str
+ */
+
+function write(path, str, mode) {
+  fs.writeFile(path, str, { mode: mode || 0666 });
+  console.log('   \x1b[36mcreated\x1b[0m : ' + path);
+}
+
+/**
+ * Mkdir -p.
+ *
+ * @param {String} path
+ * @param {Function} fn
+ */
+
+function mkdir(path, fn) {
+  mkdirp(path, 0755, function(err){
+    if (err) {
+      throw err;
+    }
+    console.log('   \033[36mcreated\033[0m : ' + path);
+    fn && fn();
+  });
+}
+
+function downloadCookbooks() {
+  var cookbooks = {
+    'nodejs' : 'https://github.com/mdxp/nodejs-cookbook/tarball/master',
+    'apt' : 'https://github.com/opscode-cookbooks/apt/tarball/master',
+    'yum-epel' : 'https://github.com/opscode-cookbooks/yum-epel/tarball/master',
+    'yum' : 'https://github.com/opscode-cookbooks/yum/tarball/master',
+    'build-essential' : 'https://github.com/opscode-cookbooks/build-essential/tarball/master',
+    'mongodb' : 'https://github.com/edelight/chef-mongodb/tarball/master',
+    'python' : 'https://github.com/poise/python/tarball/master',
+    'runit' : 'https://github.com/hw-cookbooks/runit/tarball/master'
+  };
+  for(var book in cookbooks) {
+    download(cookbooks[book], cookbookPath + book + '.tar.gz', function(error, path) {
+      if(!error) {
+        extract(path, cookbookPath, function(extractError, destination) {
+          console.log(extractError, destination);
+        });
+      }
+    });
+  }
+}
+
+function cleanup(source, destination, cb) {
+
+}
+
+function extract(source, destination, cb) {
+  fs.createReadStream(source)
+    .pipe(zlib.createGunzip())
+    .pipe(tar.Extract({ path: destination}))
+    .on('error', function(error) { cb(error, destination)})
+    .on('end', function() { cb(null, destination)})
+}
+
+function download(url, path, cb) {
+  https.get(url, function(response) {
+    var data = [], dataLen = 0; 
+    var headers = JSON.stringify(response.headers);
+    switch(response.statusCode) {
+      case 200:
+        var file = fs.createWriteStream(path);
+        response.pipe(file);
+        response.on('end', function() {
+          console.log('   \033[36mdownloaded\033[0m : ' + path +  ' cookbook');
+          cb(null, path);
+        });
+        break;
+      case 301:
+      case 302:
+      case 303:
+      case 307:
+        download(response.headers.location, path, cb);
+        break;
+      default:
+        cb(new Error('Server responded with status code ' + response.statusCode), path);
+    }
+  })
+  .on('error', function(err) {
+    cb(err, null);
+  });
+}
+
+/**
+ * Exit with the given `str`.
+ *
+ * @param {String} str
+ */
+
+function abort(str) {
+  console.error(str);
+  process.exit(1);
+}
