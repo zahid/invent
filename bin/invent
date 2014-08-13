@@ -62,12 +62,17 @@ function createApplicationAt(directory) {
   });
 
   mkdir(directory, function(){
-    loadTemplates();
+    writeTemplates();
     downloadCookbooks();
   });
 }
 
-function loadTemplates() {
+/**
+ * Copies templates from templatePath into destinationPath
+ *
+ */
+
+function writeTemplates() {
   fs.readdir(templatePath, function(err, files){
     if (err) {
       console.log(err);
@@ -125,6 +130,12 @@ function mkdir(path, fn) {
   });
 }
 
+/**
+ * Download cookbooks specified in config/cookbooks.json and extract into 
+ * destinationPath/cookbooks
+ *
+ */
+
 function downloadCookbooks() {
   mkdir(path.join(destinationPath, 'cookbooks'));
   var cookbooks = require(path.join(__dirname, '..', 'config', 'cookbooks.json'));
@@ -141,6 +152,13 @@ function downloadCookbooks() {
 
 function cleanup(source, destination, cb) { /* rename cookbooks and delete tar.gzs */ }
 
+/**
+ * Extract a tar.gz file
+ *
+ * @param {String} source
+ * @param {String} destination
+ * @param {String} cb
+ */
 function extract(source, destination, cb) {
   fs.createReadStream(source)
     .pipe(zlib.createGunzip())
@@ -149,6 +167,13 @@ function extract(source, destination, cb) {
     .on('end', function() { cb(null, destination)})
 }
 
+/**
+ * Download a file (tar.gz) via https module
+ *
+ * @param {String} url
+ * @param {String} path
+ * @param {String} cb
+ */
 function download(url, path, cb) {
   https.get(url, function(response) {
     var data = [], dataLen = 0; 
