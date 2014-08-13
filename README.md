@@ -1,4 +1,4 @@
-hobo-generator
+invent
 ==============
 
-angry-hobo generator
+start your own invention.
