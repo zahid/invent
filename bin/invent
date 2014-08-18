@@ -19,8 +19,6 @@ program
   .usage('[options] [dir]')
   .option('-f, --force', 'force on non-empty directory')
   .parse(process.argv);
-  // -n for node-mongo ?
-  // -d for drupal?
 
 var destinationPath = program.args.shift() || '.';
 var cookbookPath = path.join(destinationPath, 'cookbooks');
@@ -106,6 +104,7 @@ function emptyDirectory(path, fn) {
  *
  * @param {String} path
  * @param {String} str
+ * @param {String} mode
  */
 
 function write(path, str, mode) {
