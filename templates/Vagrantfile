@@ -1,7 +1,44 @@
+$script = <<SCRIPT
+#!/bin/bash
+function error
+{
+    echo -e "\033[1;31m${1}\033[0m" 1>&2
+}
+
+function checkRequireRootUser
+{
+    if [[ "$(whoami)" != 'root' ]]
+    then
+        error "ERROR: please run this program as 'root'"
+        exit 1
+    fi
+}
+
+function installChef()
+{
+    if [[ "$(which chef-client)" = '' ]]
+    then
+        local chefProfilePath='/etc/profile.d/chef.sh'
+
+        curl -s -L 'https://www.opscode.com/chef/install.sh' | bash && \
+        echo 'export PATH="/opt/chef/embedded/bin:$PATH"' > "${chefProfilePath}" && \
+        source "${chefProfilePath}"
+    fi
+}
+
+function main()
+{
+    checkRequireRootUser
+    installChef
+}
+
+main
+SCRIPT
+
 name = '{appName}'
 ip = '192.168.111.111'
-box = 'saucy64'
-box_url = 'http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-13.10_chef-provisionerless.box'
+box = 'trusty64'
+box_url = 'https://cloud-images.ubuntu.com/vagrant/trusty/20140813/trusty-server-cloudimg-amd64-vagrant-disk1.box'
 
 hostname = "local.#{name}"
 
@@ -27,21 +64,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         :mount_options => ['dmode=775']
     )
 
-    config.vm.provision :chef_solo do |chef|
-        chef.cookbooks_path = 'cookbooks'
-        chef.json = {
-            :project => {
-                :name => name
-            },
-            :run_list => %w{
-                nodejs
-                mongodb
-            },
-            :nodejs => {
-                :install_method => 'package',
-                :version => '0.10.28',
-                :npm => '1.4.13'
-            }
-        }
-    end
+    config.vm.provision :shell, :inline => $script
+
+    # config.vm.provision :chef_solo do |chef|
+    #     chef.cookbooks_path = 'cookbooks'
+    #     chef.json = {
+    #         :project => {
+    #             :name => name
+    #         },
+    #         :run_list => %w{
+    #             nodejs
+    #             mongodb
+    #         },
+    #         :nodejs => {
+    #             :install_method => 'package',
+    #             :version => '0.10.28',
+    #             :npm => '1.4.13'
+    #         }
+    #     }
+    # end
 end

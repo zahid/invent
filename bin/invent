@@ -110,7 +110,7 @@ function emptyDirectory(path, fn) {
 
 function write(path, str, mode) {
   fs.writeFile(path, str, { mode: mode || 0666 });
-  console.log('   \x1b[36mcreated\x1b[0m : ' + path);
+  console.log('   \x1b[36mcreated\x1b[0m    : ' + path);
 }
 
 /**
@@ -125,7 +125,7 @@ function mkdir(path, fn) {
     if (err) {
       throw err;
     }
-    console.log('   \033[36mcreated\033[0m : ' + path);
+    console.log('   \033[36mcreated\033[0m    : ' + path);
     fn && fn();
   });
 }
@@ -140,17 +140,32 @@ function downloadCookbooks() {
   mkdir(path.join(destinationPath, 'cookbooks'));
   var cookbooks = require(path.join(__dirname, '..', 'config', 'cookbooks.json'));
   for(var book in cookbooks) {
-    download(cookbooks[book], cookbookPath + book + '.tar.gz', function(error, path) {
+    download(cookbooks[book], path.join(cookbookPath, book + '.tar.gz'), function(error, path) {
       if(!error) {
-        extract(path, cookbookPath, function(extractError, destination) {
-          console.log(extractError, destination);
+        extract(path, cookbookPath, function(extractError, _destination) {
+          cleanup(_destination, path);
         });
+      } else {
+        console.log('error', error);
       }
     });
   }
 }
 
-function cleanup(source, destination, cb) { /* rename cookbooks and delete tar.gzs */ }
+function cleanup(source, destination) {  
+  source = path.join(process.cwd(), cookbookPath, source);
+  destination = path.join(process.cwd(), destination).replace('.tar.gz', '');
+  fs.unlink(destination + '.tar.gz');
+  if(fs.existsSync(source) && fs.statSync(source).isDirectory()) {
+    fs.rename(source, destination, function(error) {
+      if(error) {
+        console.log('error', error);
+      }
+    });
+  } else {
+    console.log("SHITTTTT", source);
+  }
+}
 
 /**
  * Extract a tar.gz file
@@ -160,11 +175,13 @@ function cleanup(source, destination, cb) { /* rename cookbooks and delete tar.g
  * @param {String} cb
  */
 function extract(source, destination, cb) {
+  var filename = '';
   fs.createReadStream(source)
     .pipe(zlib.createGunzip())
-    .pipe(tar.Extract({ path : destination}))
-    .on('error', function(error) { cb(error, destination)})
-    .on('end', function() { cb(null, destination)})
+    .pipe(tar.Extract({ path : destination }))
+    .on('error', function(error) { cb(error, destination); })
+    .once('entry', function(entry) { filename = entry.path.substring(0, entry.path.length -1); })
+    .on('end', function() { cb(null, filename); })
 }
 
 /**
@@ -183,7 +200,7 @@ function download(url, path, cb) {
         var file = fs.createWriteStream(path);
         response.pipe(file);
         response.on('end', function() {
-          console.log('   \033[36mdownloaded\033[0m : ' + path +  ' cookbook');
+          console.log('   \033[36mdownloaded\033[0m : ' + path.replace('.tar.gz', ''));
           cb(null, path);
         });
         break;
