@@ -16,8 +16,8 @@ var eol = os.EOL
 
 program
   .version(version)
-  .usage('[options] [dir]')
-  .option('-f, --force', 'force on non-empty directory')
+  .usage('[options] [destination]')
+  .option('-f, --force', 'force on non-empty destination')
   .parse(process.argv);
 
 var destinationPath = program.args.shift() || '.';
@@ -25,15 +25,15 @@ var cookbookPath = path.join(destinationPath, 'cookbooks');
 var templatePath = path.join(__dirname, '..', 'templates');
 var appName = path.basename(path.resolve(destinationPath));
 
-(function createApplication(path) {
-  emptyDirectory(path, function(empty){
+(function createApplication(applicationPath) {
+  isEmpty(applicationPath, function(empty){
     if (empty || program.force) {
-      createApplicationAt(path);
+      createApplicationAt(applicationPath);
     } else {
-      program.confirm('destination is not empty, continue? ', function(ok){
+      program.confirm('destination folder is not empty, continue? (y/n) ', function(ok){
         if (ok) {
           process.stdin.destroy();
-          createApplicationAt(path);
+          createApplicationAt(applicationPath);
         } else {
           abort('aborting');
         }
@@ -43,45 +43,39 @@ var appName = path.basename(path.resolve(destinationPath));
 })(destinationPath);
 
 /**
- * Create application at the given directory `path`.
+ * Create application at the given directory `applicationPath`.
  *
- * @param {String} path
+ * @param {String} applicationPath
  */
 
-function createApplicationAt(directory) {
+function createApplicationAt(applicationPath) {
   process.on('exit', function(){
     console.log();
     console.log('   getting started :');
-    console.log('     $ cd ' + directory + ' && vagrant up');
+    console.log('     $ cd ' + applicationPath + ' && vagrant up');
     console.log('     $ vagrant ssh');
     console.log();
     console.log('   \x1b[36mstart inventing ;)\x1b[0m');
     console.log();
   });
 
-  mkdir(directory, function(){
-    writeTemplates();
+  mkdir(applicationPath, function(){
+    writeTemplate('Vagrantfile');
+    writeTemplate('package.json');
     downloadCookbooks();
   });
 }
 
 /**
- * Copies templates from templatePath into destinationPath
+ * Writes the specified templates
  *
+ * @param {String} template
  */
 
-function writeTemplates() {
-  fs.readdir(templatePath, function(err, files){
-    if (err) {
-      console.log(err);
-    } else {
-      files.forEach(function(name) {
-        var templateContent = fs.readFileSync(path.join(__dirname, '..', 'templates', name), 'utf-8').replace('{appName}', appName);
-        write(path.join(destinationPath, name), templateContent);
-      });
-    } 
-  });
-}
+function writeTemplate(template) {
+  var templateContent = fs.readFileSync(path.join(templatePath, template), 'utf-8').replace('{appName}', appName);
+  write(path.join(destinationPath, template), templateContent);
+} 
 
 /**
  * Check if the given directory `path` is empty.
@@ -90,7 +84,7 @@ function writeTemplates() {
  * @param {Function} fn
  */
 
-function emptyDirectory(path, fn) {
+function isEmpty(path, fn) {
   fs.readdir(path, function(err, files){
     if (err && 'ENOENT' != err.code) {
       throw err;
@@ -137,12 +131,16 @@ function mkdir(path, fn) {
 
 function downloadCookbooks() {
   mkdir(path.join(destinationPath, 'cookbooks'));
-  var cookbooks = require(path.join(__dirname, '..', 'config', 'cookbooks.json'));
-  for(var book in cookbooks) {
-    download(cookbooks[book], path.join(cookbookPath, book + '.tar.gz'), function(error, path) {
+  var cookbookList = require(path.join(__dirname, '..', 'config', 'cookbooks.json'));
+  for(var book in cookbookList) {
+    download(cookbookList[book], path.join(cookbookPath, book + '.tar.gz'), function(error, _path) {
       if(!error) {
-        extract(path, cookbookPath, function(extractError, _destination) {
-          cleanup(_destination, path);
+        extract(_path, cookbookPath, function(extractError, _destination) {
+          if(extractError) {
+            console.log('extractError', extractError);
+          } else {
+            cleanup(_destination, _path);
+          }
         });
       } else {
         console.log('error', error);
@@ -151,19 +149,25 @@ function downloadCookbooks() {
   }
 }
 
+/**
+ * Cleanups up cookbooks
+ *
+ * @param {String} source
+ * @param {String} destination
+ */
+
 function cleanup(source, destination) {  
-  source = path.join(process.cwd(), cookbookPath, source);
-  destination = path.join(process.cwd(), destination).replace('.tar.gz', '');
-  fs.unlink(destination + '.tar.gz');
-  if(fs.existsSync(source) && fs.statSync(source).isDirectory()) {
-    fs.rename(source, destination, function(error) {
-      if(error) {
-        console.log('error', error);
-      }
-    });
-  } else {
-    console.log("SHITTTTT", source);
-  }
+  source = path.join(cookbookPath, source);
+  fs.unlink(destination, function(error) {
+    if(error) {
+      console.log('unlink error', error);
+    }
+  });
+  fs.rename(source, destination.replace('.tar.gz', ''), function(error) {
+    if(error) {
+      console.log('error', error);
+    }
+  });
 }
 
 /**
