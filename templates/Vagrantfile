@@ -39,8 +39,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             },
             :nodejs => {
                 :install_method => 'package',
-                :version => '0.10.28',
-                :npm => '1.4.13'
+                :version => '0.10.31',
+                :npm => '1.4.23'
             }
         }
     end
