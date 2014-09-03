@@ -21,9 +21,9 @@ program
   .parse(process.argv);
 
 var destinationPath = program.args.shift() || '.';
+var appName = program.args.shift() || 'invent';
 var cookbookPath = path.join(destinationPath, 'cookbooks');
 var templatePath = path.join(__dirname, '..', 'templates');
-var appName = path.basename(path.resolve(destinationPath));
 
 (function createApplication(applicationPath) {
   isEmpty(applicationPath, function(empty){
@@ -143,7 +143,8 @@ function downloadCookbooks() {
           }
         });
       } else {
-        console.log('error', error);
+        // console.error('Error downloading', cookbookList[book]);
+        abort('Error downloading ' + cookbookList[book]);
       }
     });
   }
@@ -160,12 +161,14 @@ function cleanup(source, destination) {
   source = path.join(cookbookPath, source);
   fs.unlink(destination, function(error) {
     if(error) {
-      console.log('unlink error', error);
+      // console.error('Error unlinking', destination);
+      abort('Error unlinking ' + destination);
     }
   });
   fs.rename(source, destination.replace('.tar.gz', ''), function(error) {
     if(error) {
-      console.log('error', error);
+      // console.error('Error renaming', source, 'to', destination.replace('.tar.gz', ''));
+      abort('Error renaming ' + source + ' to ' + destination.replace('.tar.gz', ''));
     }
   });
 }
@@ -182,7 +185,7 @@ function extract(source, destination, cb) {
   fs.createReadStream(source)
     .pipe(zlib.createGunzip())
     .pipe(tar.Extract({ path : destination }))
-    .on('error', function(error) { cb(error, destination); })
+    error('error', function(error) { cb(error, destination); })
     .once('entry', function(entry) { filename = entry.path.substring(0, entry.path.length -1); })
     .on('end', function() { cb(null, filename); })
 }
@@ -214,7 +217,8 @@ function download(url, path, cb) {
         download(response.headers.location, path, cb);
         break;
       default :
-        cb(new Error('Server responded with status code ' + response.statusCode), path);
+        // cb(new Error('Server responded with status code ' + response.statusCode), path);
+        abort('Server responded with status code ' + response.statusCode + ' | ' + path)
     }
   })
   .on('error', function(err) {
