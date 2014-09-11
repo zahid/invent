@@ -12,7 +12,7 @@ var zlib = require('zlib');
 
 var pkg = require('../package.json');
 var version = pkg.version;
-var eol = os.EOL
+var eol = os.EOL;
 
 program
   .version(version)
@@ -35,7 +35,7 @@ var templatePath = path.join(__dirname, '..', 'templates');
           process.stdin.destroy();
           createApplicationAt(applicationPath);
         } else {
-          abort('aborting');
+          abort('aborting', 1);
         }
       });
     }
@@ -49,14 +49,15 @@ var templatePath = path.join(__dirname, '..', 'templates');
  */
 
 function createApplicationAt(applicationPath) {
-  process.on('exit', function(){
-    console.log();
-    console.log('   getting started :');
-    console.log('     $ cd ' + applicationPath + ' && vagrant up');
-    console.log('     $ vagrant ssh');
-    console.log();
-    console.log('   \x1b[36mstart inventing ;)\x1b[0m');
-    console.log();
+  process.on('exit', function(code){
+    if(code === 0) {
+      console.log();
+      console.log('   getting started :');
+      console.log('     $ cd ' + applicationPath + ' && vagrant up');
+      console.log('     $ vagrant ssh');
+      console.log();
+      console.log('   \x1b[36mstart inventing ;)\x1b[0m');
+    }
   });
 
   mkdir(applicationPath, function(){
@@ -136,15 +137,14 @@ function downloadCookbooks() {
     download(cookbookList[book], path.join(cookbookPath, book + '.tar.gz'), function(error, _path) {
       if(!error) {
         extract(_path, cookbookPath, function(extractError, _destination) {
-          if(extractError) {
-            console.log('extractError', extractError);
-          } else {
+          if(!extractError) {
             cleanup(_destination, _path);
+          } else {
+            console.log('Error with cookbook extraction', extractError);
           }
         });
       } else {
-        // console.error('Error downloading', cookbookList[book]);
-        abort('Error downloading ' + cookbookList[book]);
+        abort('Could not download ' + cookbookList[book], 1);
       }
     });
   }
@@ -161,14 +161,12 @@ function cleanup(source, destination) {
   source = path.join(cookbookPath, source);
   fs.unlink(destination, function(error) {
     if(error) {
-      // console.error('Error unlinking', destination);
-      abort('Error unlinking ' + destination);
+      console.error('Error unlinking', destination);
     }
   });
   fs.rename(source, destination.replace('.tar.gz', ''), function(error) {
     if(error) {
-      // console.error('Error renaming', source, 'to', destination.replace('.tar.gz', ''));
-      abort('Error renaming ' + source + ' to ' + destination.replace('.tar.gz', ''));
+      console.error('Error renaming', source, 'to', destination.replace('.tar.gz', ''));
     }
   });
 }
@@ -185,7 +183,7 @@ function extract(source, destination, cb) {
   fs.createReadStream(source)
     .pipe(zlib.createGunzip())
     .pipe(tar.Extract({ path : destination }))
-    error('error', function(error) { cb(error, destination); })
+    .on('error', function(error) { cb(error, destination); })
     .once('entry', function(entry) { filename = entry.path.substring(0, entry.path.length -1); })
     .on('end', function() { cb(null, filename); })
 }
@@ -217,8 +215,7 @@ function download(url, path, cb) {
         download(response.headers.location, path, cb);
         break;
       default :
-        // cb(new Error('Server responded with status code ' + response.statusCode), path);
-        abort('Server responded with status code ' + response.statusCode + ' | ' + path)
+        cb(new Error('Server responded with status code ' + response.statusCode), path);
     }
   })
   .on('error', function(err) {
@@ -232,7 +229,7 @@ function download(url, path, cb) {
  * @param {String} str
  */
 
-function abort(str) {
+function abort(str, code) {
   console.error(str);
-  process.exit(1);
+  process.exit(code);
 }
