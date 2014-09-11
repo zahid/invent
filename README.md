@@ -19,7 +19,8 @@ Use via:
 How it works
 
 * Copies over template files for package.json and the Vagrantfile
-* Downloads and untars required chef cookbooks
+* Downloads Trusty 64 from Ubuntu Cloud Images
+* Downloads and uncompresses required chef cookbooks
 
 Requires
 
@@ -27,6 +28,6 @@ Requires
     VirtualBox Version 4.3.12
 
 Installs 
-* nodejs version 0.10.31
-* npm version 1.4.23
-* mongodb version @latest
+* nodejs 0.10.31
+* npm 1.4.23
+* mongodb @latest

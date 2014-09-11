@@ -15,10 +15,10 @@ var version = pkg.version;
 var eol = os.EOL;
 
 program
-  .version(version)
-  .usage('[options] [destination]')
-  .option('-f, --force', 'force on non-empty destination')
-  .parse(process.argv);
+    .version(version)
+    .usage('[options] [destination]')
+    .option('-f, --force', 'force on non-empty destination')
+    .parse(process.argv);
 
 var destinationPath = program.args.shift() || '.';
 var appName = program.args.shift() || 'invent';
@@ -26,20 +26,20 @@ var cookbookPath = path.join(destinationPath, 'cookbooks');
 var templatePath = path.join(__dirname, '..', 'templates');
 
 (function createApplication(applicationPath) {
-  isEmpty(applicationPath, function(empty){
-    if (empty || program.force) {
-      createApplicationAt(applicationPath);
-    } else {
-      program.confirm('destination folder is not empty, continue? (y/n) ', function(ok){
-        if (ok) {
-          process.stdin.destroy();
-          createApplicationAt(applicationPath);
+    isEmpty(applicationPath, function(empty){
+        if (empty || program.force) {
+            createApplicationAt(applicationPath);
         } else {
-          abort('aborting', 1);
+            program.confirm('destination folder is not empty, continue? (y/n) ', function(ok){
+                if (ok) {
+                    process.stdin.destroy();
+                    createApplicationAt(applicationPath);
+                } else {
+                    abort('aborting', 1);
+                }
+            });
         }
-      });
-    }
-  });
+    });
 })(destinationPath);
 
 /**
@@ -49,22 +49,22 @@ var templatePath = path.join(__dirname, '..', 'templates');
  */
 
 function createApplicationAt(applicationPath) {
-  process.on('exit', function(code){
-    if(code === 0) {
-      console.log();
-      console.log('   getting started :');
-      console.log('     $ cd ' + applicationPath + ' && vagrant up');
-      console.log('     $ vagrant ssh');
-      console.log();
-      console.log('   \x1b[36mstart inventing ;)\x1b[0m');
-    }
-  });
+    process.on('exit', function(code){
+        if(code === 0) {
+            console.log();
+            console.log('   getting started :');
+            console.log('     $ cd ' + applicationPath + ' && vagrant up');
+            console.log('     $ vagrant ssh');
+            console.log();
+            console.log('   \x1b[36mstart inventing ;)\x1b[0m');
+        }
+    });
 
-  mkdir(applicationPath, function(){
-    writeTemplate('Vagrantfile');
-    writeTemplate('package.json');
-    downloadCookbooks();
-  });
+    mkdir(applicationPath, function(){
+        writeTemplate('Vagrantfile');
+        writeTemplate('package.json');
+        downloadCookbooks();
+    });
 }
 
 /**
@@ -74,8 +74,8 @@ function createApplicationAt(applicationPath) {
  */
 
 function writeTemplate(template) {
-  var templateContent = fs.readFileSync(path.join(templatePath, template), 'utf-8').replace('{appName}', appName);
-  write(path.join(destinationPath, template), templateContent);
+    var templateContent = fs.readFileSync(path.join(templatePath, template), 'utf-8').replace('{appName}', appName);
+    write(path.join(destinationPath, template), templateContent);
 } 
 
 /**
@@ -86,12 +86,12 @@ function writeTemplate(template) {
  */
 
 function isEmpty(path, fn) {
-  fs.readdir(path, function(err, files){
-    if (err && 'ENOENT' != err.code) {
-      throw err;
-    }
-    fn(!files || !files.length);
-  });
+    fs.readdir(path, function(err, files){
+        if (err && 'ENOENT' != err.code) {
+            throw err;
+        }
+        fn(!files || !files.length);
+    });
 }
 
 /**
@@ -103,8 +103,8 @@ function isEmpty(path, fn) {
  */
 
 function write(path, str, mode) {
-  fs.writeFile(path, str, { mode: mode || 0666 });
-  console.log('   \x1b[36mcreated\x1b[0m    : ' + path);
+    fs.writeFile(path, str, { mode: mode || 0666 });
+    console.log('   \x1b[36mcreated\x1b[0m    : ' + path);
 }
 
 /**
@@ -115,13 +115,13 @@ function write(path, str, mode) {
  */
 
 function mkdir(path, fn) {
-  mkdirp(path, 0755, function(err){
-    if (err) {
-      throw err;
-    }
-    console.log('   \033[36mcreated\033[0m    : ' + path);
-    fn && fn();
-  });
+    mkdirp(path, 0755, function(err){
+        if (err) {
+            throw err;
+        }
+        console.log('   \033[36mcreated\033[0m    : ' + path);
+        fn && fn();
+    });
 }
 
 /**
@@ -131,23 +131,23 @@ function mkdir(path, fn) {
  */
 
 function downloadCookbooks() {
-  mkdir(path.join(destinationPath, 'cookbooks'));
-  var cookbookList = require(path.join(__dirname, '..', 'config', 'cookbooks.json'));
-  for(var book in cookbookList) {
-    download(cookbookList[book], path.join(cookbookPath, book + '.tar.gz'), function(error, _path) {
-      if(!error) {
-        extract(_path, cookbookPath, function(extractError, _destination) {
-          if(!extractError) {
-            cleanup(_destination, _path);
-          } else {
-            console.log('Error with cookbook extraction', extractError);
-          }
+    mkdir(path.join(destinationPath, 'cookbooks'));
+    var cookbookList = require(path.join(__dirname, '..', 'config', 'cookbooks.json'));
+    for(var book in cookbookList) {
+        download(cookbookList[book], path.join(cookbookPath, book + '.tar.gz'), function(error, _path) {
+            if(!error) {
+                extract(_path, cookbookPath, function(extractError, _destination) {
+                    if(!extractError) {
+                        cleanup(_destination, _path);
+                    } else {
+                        console.log('Error with cookbook extraction', extractError);
+                    }
+                });
+            } else {
+                abort('Could not download ' + cookbookList[book], 1);
+            }
         });
-      } else {
-        abort('Could not download ' + cookbookList[book], 1);
-      }
-    });
-  }
+    }
 }
 
 /**
@@ -158,17 +158,17 @@ function downloadCookbooks() {
  */
 
 function cleanup(source, destination) {  
-  source = path.join(cookbookPath, source);
-  fs.unlink(destination, function(error) {
-    if(error) {
-      console.error('Error unlinking', destination);
-    }
-  });
-  fs.rename(source, destination.replace('.tar.gz', ''), function(error) {
-    if(error) {
-      console.error('Error renaming', source, 'to', destination.replace('.tar.gz', ''));
-    }
-  });
+    source = path.join(cookbookPath, source);
+    fs.unlink(destination, function(error) {
+        if(error) {
+            console.error('Error unlinking', destination);
+        }
+    });
+    fs.rename(source, destination.replace('.tar.gz', ''), function(error) {
+        if(error) {
+            console.error('Error renaming', source, 'to', destination.replace('.tar.gz', ''));
+        }
+    });
 }
 
 /**
@@ -179,13 +179,13 @@ function cleanup(source, destination) {
  * @param {String} cb
  */
 function extract(source, destination, cb) {
-  var filename = '';
-  fs.createReadStream(source)
-    .pipe(zlib.createGunzip())
-    .pipe(tar.Extract({ path : destination }))
-    .on('error', function(error) { cb(error, destination); })
-    .once('entry', function(entry) { filename = entry.path.substring(0, entry.path.length -1); })
-    .on('end', function() { cb(null, filename); })
+    var filename = '';
+    fs.createReadStream(source)
+        .pipe(zlib.createGunzip())
+        .pipe(tar.Extract({ path : destination }))
+        .on('error', function(error) { cb(error, destination); })
+        .once('entry', function(entry) { filename = entry.path.substring(0, entry.path.length -1); })
+        .on('end', function() { cb(null, filename); })
 }
 
 /**
@@ -196,31 +196,31 @@ function extract(source, destination, cb) {
  * @param {String} cb
  */
 function download(url, path, cb) {
-  https.get(url, function(response) {
-    var data = [], dataLen = 0; 
-    var headers = JSON.stringify(response.headers);
-    switch(response.statusCode) {
-      case 200 :
-        var file = fs.createWriteStream(path);
-        response.pipe(file);
-        response.on('end', function() {
-          console.log('   \033[36mdownloaded\033[0m : ' + path.replace('.tar.gz', ''));
-          cb(null, path);
-        });
-        break;
-      case 301 :
-      case 302 :
-      case 303 :
-      case 307 :
-        download(response.headers.location, path, cb);
-        break;
-      default :
-        cb(new Error('Server responded with status code ' + response.statusCode), path);
-    }
-  })
-  .on('error', function(err) {
-    cb(err, null);
-  });
+    https.get(url, function(response) {
+        var data = [], dataLen = 0; 
+        var headers = JSON.stringify(response.headers);
+        switch(response.statusCode) {
+            case 200 :
+                var file = fs.createWriteStream(path);
+                response.pipe(file);
+                response.on('end', function() {
+                    console.log('   \033[36mdownloaded\033[0m : ' + path.replace('.tar.gz', ''));
+                    cb(null, path);
+                });
+                break;
+            case 301 :
+            case 302 :
+            case 303 :
+            case 307 :
+                download(response.headers.location, path, cb);
+                break;
+            default :
+                cb(new Error('Server responded with status code ' + response.statusCode), path);
+        }
+    })
+    .on('error', function(err) {
+        cb(err, null);
+    });
 }
 
 /**
@@ -230,6 +230,6 @@ function download(url, path, cb) {
  */
 
 function abort(str, code) {
-  console.error(str);
-  process.exit(code);
+    console.error(str);
+    process.exit(code);
 }
