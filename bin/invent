@@ -112,13 +112,13 @@ function write(path, str, mode) {
  * @param {Function} fn
  */
 
-function mkdir(path, fn) {
+function mkdir(path, cb) {
     mkdirp(path, 0755, function(err){
         if (err) {
             throw err;
         }
         console.log('   \033[36mcreated\033[0m    : ' + path);
-        fn && fn();
+        cb && cb();
     });
 }
 
