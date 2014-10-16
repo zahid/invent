@@ -2,12 +2,9 @@
 
 var program = require('commander');
 var mkdirp = require('mkdirp');
-var tar = require('tar');
 
 var fs = require('fs');
 var path = require('path');
-var https = require('https');
-var zlib = require('zlib');
 
 var pkg = require('../package.json');
 var version = pkg.version;
@@ -19,7 +16,9 @@ program
     .parse(process.argv);
 
 var destinationPath = program.args.shift() || '.';
-var appName = program.args.shift() || 'invent';
+
+var appName = (destinationPath !== '.') ? destinationPath : 'invent';
+
 var cookbookPath = path.join(destinationPath, 'cookbooks');
 var templatePath = path.join(__dirname, '..', 'templates');
 
@@ -61,7 +60,7 @@ function createApplicationAt(applicationPath) {
     mkdir(applicationPath, function(){
         writeTemplate('Vagrantfile');
         writeTemplate('package.json');
-        downloadCookbooks();
+        writeTemplate('Berksfile');
     });
 }
 
@@ -73,6 +72,7 @@ function createApplicationAt(applicationPath) {
 
 function writeTemplate(template) {
     var templateContent = fs.readFileSync(path.join(templatePath, template), 'utf-8').replace('{appName}', appName);
+
     write(path.join(destinationPath, template), templateContent);
 } 
 
@@ -123,108 +123,10 @@ function mkdir(path, fn) {
 }
 
 /**
- * Download cookbooks specified in config/cookbooks.json and extract into 
- * destinationPath/cookbooks
- *
- */
-
-function downloadCookbooks() {
-    mkdir(path.join(destinationPath, 'cookbooks'));
-    var cookbookList = require(path.join(__dirname, '..', 'config', 'cookbooks.json'));
-    for(var book in cookbookList) {
-        download(cookbookList[book], path.join(cookbookPath, book + '.tar.gz'), function(error, _path) {
-            if(!error) {
-                extract(_path, cookbookPath, function(extractError, _destination) {
-                    if(!extractError) {
-                        cleanup(_destination, _path);
-                    } else {
-                        console.log('Error with cookbook extraction', extractError);
-                    }
-                });
-            } else {
-                abort('Could not download ' + cookbookList[book], 1);
-            }
-        });
-    }
-}
-
-/**
- * Cleanups up cookbooks
- *
- * @param {String} source
- * @param {String} destination
- */
-
-function cleanup(source, destination) {  
-    source = path.join(cookbookPath, source);
-    fs.unlink(destination, function(error) {
-        if(error) {
-            console.error('Error unlinking', destination);
-        }
-    });
-    fs.rename(source, destination.replace('.tar.gz', ''), function(error) {
-        if(error) {
-            console.error('Error renaming', source, 'to', destination.replace('.tar.gz', ''));
-        }
-    });
-}
-
-/**
- * Extract a tar.gz file
- *
- * @param {String} source
- * @param {String} destination
- * @param {String} cb
- */
-function extract(source, destination, cb) {
-    var filename = '';
-    fs.createReadStream(source)
-        .pipe(zlib.createGunzip())
-        .pipe(tar.Extract({ path : destination }))
-        .on('error', function(error) { cb(error, destination); })
-        .once('entry', function(entry) { filename = entry.path.substring(0, entry.path.length -1); })
-        .on('end', function() { cb(null, filename); })
-}
-
-/**
- * Download a file (tar.gz) via https module
- *
- * @param {String} url
- * @param {String} path
- * @param {String} cb
- */
-function download(url, path, cb) {
-    https.get(url, function(response) {
-        var data = [], dataLen = 0; 
-        var headers = JSON.stringify(response.headers);
-        switch(response.statusCode) {
-            case 200 :
-                var file = fs.createWriteStream(path);
-                response.pipe(file);
-                response.on('end', function() {
-                    console.log('   \033[36mdownloaded\033[0m : ' + path.replace('.tar.gz', ''));
-                    cb(null, path);
-                });
-                break;
-            case 301 :
-            case 302 :
-            case 303 :
-            case 307 :
-                download(response.headers.location, path, cb);
-                break;
-            default :
-                cb(new Error('Server responded with status code ' + response.statusCode), path);
-        }
-    })
-    .on('error', function(err) {
-        cb(err, null);
-    });
-}
-
-/**
- * Exit with the given `str`.
+ * Abort everything
  *
  * @param {String} str
+ * @param {Number} code
  */
 
 function abort(str, code) {
