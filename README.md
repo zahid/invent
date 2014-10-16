@@ -19,6 +19,7 @@ Use via:
 
     $ invent my_app
 
+You can now serve applications out of 192.168.111.111
 
 How it works
 
