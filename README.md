@@ -36,3 +36,22 @@ Installs
 * nodejs 0.10.31
 * npm 1.4.23
 * mongodb @latest
+
+--------------
+
+##### Example webserver
+* Vagrant ssh into the box - `$ vagrant ssh`
+* Create a file app.js
+
+    
+    /* app.js */
+    var http = require('http');
+    var server = http.createServer(function (request, response) {
+      response.writeHead(200, {"Content-Type": "text/plain"});
+      response.end("Start your own invention\n");
+    });
+    server.listen(80);
+    console.log("Server running at http://127.0.0.1:80/");
+   
+* From the guest machine, run the app - `sudo node app.js` 
+* From the host machine, visit `192.168.111.111`
