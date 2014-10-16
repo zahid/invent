@@ -3,17 +3,21 @@ invent
 #### start your own invention.
 --------------
 
-
 This is a tool to jumpstart your nodejs development in conjuntion with mongodb.
 Similar to the express-generator, this is a vagrant generator. 
 
-install via: 
+So you want to do some application development via vagrant as your environment control, first install some dependancies to get you going:
+	
+	$ vagrant plugin install vagrant-omnibus
+	$ vagrant plugin install vagrant-berkshelf
 
-    npm install -g invent
+install this module via: 
+
+    $ npm install -g invent
     
 Use via:
 
-    invent my_app
+    $ invent my_app
 
 
 How it works
