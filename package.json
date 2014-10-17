@@ -1,7 +1,7 @@
 {
     "name": "invent",
     "description": "NodeJS + MongoDB + Vagrant Generator",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "author": "Zahid Mahir <zahid@zmhr.me>",
     "repository": "git@github.com:zahid/invent.git",
     "engines": {
