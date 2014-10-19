@@ -1,24 +1,20 @@
 name = '{appName}'
-ip = '192.168.111.111'
-box = 'trusty64'
-box_url = 'https://cloud-images.ubuntu.com/vagrant/trusty/20140813/trusty-server-cloudimg-amd64-vagrant-disk1.box'
-
-hostname = "local.#{name}"
 
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-    config.vm.box = box
-    config.vm.box_url = box_url
+    config.vm.box = 'trusty64'
+    config.vm.box_url = 'https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box'
+    config.berkshelf.berksfile_path = './Berksfile'
+    config.omnibus.chef_version = :latest
+    config.vm.network :private_network, ip: '192.168.111.111'
+    config.vm.hostname = "local.#{name}"
+
 
     config.vm.provider :virtualbox do |vb|
         vb.name = name
-    end
-
-    config.vm.network :private_network, ip: ip
-
-    config.vm.hostname = hostname
+    end    
 
     config.vm.synced_folder(
         '.',
