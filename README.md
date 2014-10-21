@@ -1,7 +1,6 @@
 invent
 ==============
 ###### start your own invention.
---------------
 
 This is a tool to jumpstart your Node.js development in conjunction with MongoDB.
 Similar to the other generator tools out there, this is a vagrant environment generator.
@@ -23,7 +22,6 @@ $ cd my_app && vagrant up
 ```
 SSH into the VM via `$ vagrant ssh` from the project directory. 
 
---------------
 ## Dependancies
 So you want to do some application development via vagrant as your environment control, first install some dependancies to get you going:
 
@@ -33,14 +31,12 @@ So you want to do some application development via vagrant as your environment c
 * [vagrant-omnibus](https://github.com/opscode/vagrant-omnibus) plugin
 * [vagrant-berkshelf](https://github.com/berkshelf/vagrant-berkshelf) plugin
 
---------------
 ## Installation
 Then install this module via: 
 ```
 $ npm install -g invent
 ``` 
 
---------------
 ## Usage
 Use via:
 ````
@@ -75,7 +71,6 @@ console.log("Server running at http://127.0.0.1:80/");
 * From the guest machine, run the app - `sudo node app.js` 
 * From the host machine, visit - `192.168.111.111`
 
---------------
 ## Issues:
 There is a known issue with Chef Development Kit installation in regards to Nokogiri on OSX, the Nokogiri team has the solution documented [here](http://www.nokogiri.org/tutorials/installing_nokogiri.html)
 
