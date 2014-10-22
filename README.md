@@ -6,7 +6,7 @@ invent
 
 This is a tool to jumpstart your Node.js development in conjunction with MongoDB.
 Similar to the other generator tools out there, this is a vagrant environment generator.
-## tldr;
+## tl;dr
 
 Install
 
@@ -15,14 +15,16 @@ Install
 * [Chef Development Kit](http://downloads.getchef.com/chef-dk/)
 
 Then:
-```
+
+```shell
 $ vagrant plugin install vagrant-omnibus
 $ vagrant plugin install vagrant-berkshelf
 $ npm install -g invent
 $ invent my_app
 $ cd my_app && vagrant up
 ```
-SSH into the VM via `$ vagrant ssh` from the project directory. 
+
+SSH into the VM via `vagrant ssh` from the project directory. 
 
 ## Dependancies
 So you want to do some application development via vagrant as your environment control, first install some dependancies to get you going:
@@ -35,21 +37,24 @@ So you want to do some application development via vagrant as your environment c
 
 ## Installation
 Then install this module via: 
-```
+
+```shell
 $ npm install -g invent
 ``` 
 
 ## Usage
 Use via:
-````
+
+````shell
 $ invent my_app
 ```
+
 You can now serve applications out of 192.168.111.111 (as specified in your *Vagrantfile*)
 
 How it works
 * Copies over template files for package.json and the Vagrantfile
-* Downloads a Trusty 64 basebox from Ubuntu Cloud Images
-* Downloads and uncompresses required chef cookbooks
+* Downloads a Trusty 64 Vagrant basebox from Ubuntu Cloud Images
+* Downloads and uncompresses required chef cookbooks via Berkshelf
 
 Installs 
 * Ubuntu 14.04
@@ -60,7 +65,8 @@ Installs
 ###### Example webserver
 * SSH into the box - `$ vagrant ssh`
 * Create the file app.js - `$ vim app.js`
-```
+
+```javascript
 /* app.js */
 var http = require('http');
 var server = http.createServer(function (request, response) {
@@ -70,6 +76,7 @@ var server = http.createServer(function (request, response) {
 server.listen(80);
 console.log("Server running at http://127.0.0.1:80/");
 ```
+
 * From the guest machine, run the app - `sudo node app.js` 
 * From the host machine, visit - `192.168.111.111`
 
