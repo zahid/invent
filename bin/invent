@@ -13,10 +13,10 @@ program
     .version(version)
     .usage('[options] [destination]')
     .option('-f, --force', 'force on non-empty destination')
+    .option('--no-color', 'no colored output')
     .parse(process.argv);
 
 var destinationPath = program.args.shift() || '.';
-
 var appName = (destinationPath !== '.') ? destinationPath : 'invent';
 
 var cookbookPath = path.join(destinationPath, 'cookbooks');
@@ -47,7 +47,12 @@ function createApplicationAt(applicationPath) {
             console.log('     $ cd ' + applicationPath + ' && vagrant up');
             console.log('     $ vagrant ssh');
             console.log();
-            console.log('   \x1b[36mstart inventing ;)\x1b[0m');
+            if(program.color) {
+                console.log('   \x1b[36mstart inventing ;)\x1b[0m');
+            } else {
+                console.log('   start inventing ;)');
+            }
+            console.log();
         }
     });
 
@@ -96,7 +101,11 @@ function isEmpty(path, fn) {
 
 function write(path, str, mode) {
     fs.writeFile(path, str, { mode: mode || 0666 });
-    console.log('   \x1b[36mcreated\x1b[0m    : ' + path);
+    if(program.color) {
+        console.log('   \x1b[36mcreated\x1b[0m    : ' + path);
+    } else {
+        console.log('   created    : ' + path);
+    }
 }
 
 /**
@@ -111,7 +120,11 @@ function mkdir(path, cb) {
         if (err) {
             throw err;
         }
-        console.log('   \033[36mcreated\033[0m    : ' + path);
+        if(program.color) {
+            console.log('   \033[36mcreated\033[0m    : ' + path);
+        } else {
+            console.log('   created    : ' + path);
+        }
         cb && cb();
     });
 }
