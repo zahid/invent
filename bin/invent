@@ -2,10 +2,8 @@
 
 var program = require('commander');
 var mkdirp = require('mkdirp');
-
 var fs = require('fs');
 var path = require('path');
-
 var pkg = require('../package.json');
 var version = pkg.version;
 
@@ -22,16 +20,14 @@ var appName = (destinationPath !== '.') ? destinationPath : 'invent';
 var cookbookPath = path.join(destinationPath, 'cookbooks');
 var templatePath = path.join(__dirname, '..', 'templates');
 
-(function createApplication(applicationPath) {
-    isEmpty(applicationPath, function(empty){
-        if (empty || program.force) {
-            createApplicationAt(applicationPath);
-        } else {
-            console.log('Destination folder is not empty, use `--force` to force');
-            abort('Aborting', 1);
-        }
-    });
-})(destinationPath);
+isEmpty(destinationPath, function(empty){
+    if (empty || program.force) {
+        inventApp(applicationPath);
+    } else {
+        console.log('Destination folder is not empty, use `--force` to force');
+        abort('Aborting', 1);
+    }
+});
 
 /**
  * Create application at the given directory `applicationPath`.
@@ -39,7 +35,7 @@ var templatePath = path.join(__dirname, '..', 'templates');
  * @param {String} applicationPath
  */
 
-function createApplicationAt(applicationPath) {
+function inventApp(applicationPath) {
     process.on('exit', function(code){
         if(code === 0) {
             console.log();
@@ -71,7 +67,6 @@ function createApplicationAt(applicationPath) {
 
 function writeTemplate(template) {
     var templateContent = fs.readFileSync(path.join(templatePath, template), 'utf-8').replace('{appName}', appName);
-
     write(path.join(destinationPath, template), templateContent);
 } 
 
