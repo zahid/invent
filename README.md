@@ -6,7 +6,7 @@ invent
 
 This is a tool to jumpstart your Node.js development in conjunction with MongoDB.
 Similar to the other generator tools out there, this is a vagrant environment generator.
-## tldr;
+## tl;dr
 
 Install
 
@@ -22,7 +22,7 @@ $ npm install -g invent
 $ invent my_app
 $ cd my_app && vagrant up
 ```
-SSH into the VM via `$ vagrant ssh` from the project directory. 
+SSH into the VM via `vagrant ssh` from the project directory. 
 
 ## Dependancies
 So you want to do some application development via vagrant as your environment control, first install some dependancies to get you going:
@@ -48,8 +48,8 @@ You can now serve applications out of 192.168.111.111 (as specified in your *Vag
 
 How it works
 * Copies over template files for package.json and the Vagrantfile
-* Downloads a Trusty 64 basebox from Ubuntu Cloud Images
-* Downloads and uncompresses required chef cookbooks
+* Downloads a Trusty 64 Vagrant basebox from Ubuntu Cloud Images
+* Downloads and uncompresses required chef cookbooks via Berkshelf
 
 Installs 
 * Ubuntu 14.04
@@ -60,7 +60,7 @@ Installs
 ###### Example webserver
 * SSH into the box - `$ vagrant ssh`
 * Create the file app.js - `$ vim app.js`
-```
+```javascript
 /* app.js */
 var http = require('http');
 var server = http.createServer(function (request, response) {
