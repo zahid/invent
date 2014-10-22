@@ -2,7 +2,7 @@ invent
 ==============
 ###### start your own invention.
 
-![gratipay](http://img.shields.io/gratipay/zahid.svg)
+[![Build Status](https://travis-ci.org/zahid/invent.svg?branch=master)](https://travis-ci.org/zahid/invent)
 
 This is a tool to jumpstart your Node.js development in conjunction with MongoDB.
 Similar to the other generator tools out there, this is a vagrant environment generator.
