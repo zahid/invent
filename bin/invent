@@ -17,12 +17,11 @@ program
 var destinationPath = program.args.shift() || '.';
 var appName = (destinationPath !== '.') ? destinationPath : 'invent';
 
-var cookbookPath = path.join(destinationPath, 'cookbooks');
 var templatePath = path.join(__dirname, '..', 'templates');
 
 isEmpty(destinationPath, function(empty){
     if (empty || program.force) {
-        inventApp(applicationPath);
+        inventApp(destinationPath);
     } else {
         console.log('Destination folder is not empty, use `--force` to force');
         abort('Aborting', 1);
