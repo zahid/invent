@@ -1,0 +1,20 @@
+AllCops:
+  Include:
+    - '**/Berksfile'
+    - '**/Vagrantfile'
+
+Style/IndentationWidth:
+  # The following option can replace the subsequent one
+  # once a version of Rubocop >0.26.1 is released
+  # Width: 4
+  Enabled: false
+
+Style/IndentHash:
+  # The following option can be removed
+  # once a version of Rubocop >0.26.1 is released
+  Enabled: false
+
+Style/IndentArray:
+  # The following option can be removed
+  # once a version of Rubocop >0.26.1 is released
+  Enabled: false
