@@ -65,9 +65,10 @@ function inventApp(applicationPath) {
  */
 
 function writeTemplate(template) {
-    var templateContent = fs.readFileSync(path.join(templatePath, template), 'utf-8').replace('{appName}', appName);
+    var templateContent = fs.readFileSync(path.join(templatePath, template), 'utf-8')
+        .replace('{appName}', appName);
     write(path.join(destinationPath, template), templateContent);
-} 
+}
 
 /**
  * Check if the given directory `path` is empty.
@@ -78,7 +79,7 @@ function writeTemplate(template) {
 
 function isEmpty(path, fn) {
     fs.readdir(path, function(err, files){
-        if (err && 'ENOENT' != err.code) {
+        if (err && 'ENOENT' !== err.code) {
             throw err;
         }
         fn(!files || !files.length);
