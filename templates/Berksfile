@@ -1,4 +1,4 @@
-source "https://supermarket.getchef.com"
+source 'https://supermarket.getchef.com'
 
-cookbook "nodejs"
-cookbook "mongodb"
+cookbook 'nodejs'
+cookbook 'mongodb'

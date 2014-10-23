@@ -1,4 +1,4 @@
-VAGRANTFILE_API_VERSION = "2"
+VAGRANTFILE_API_VERSION = '2'
 name = '{appName}'
 box = 'trusty64'
 box_url = 'https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box'
@@ -15,22 +15,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     config.vm.provider :virtualbox do |vb|
         vb.name = name
-    end    
+    end
 
     config.vm.synced_folder(
         '.',
         "/home/vagrant/#{name}",
-        :owner => 'vagrant',
-        :mount_options => ['dmode=775']
+        owner: 'vagrant',
+        mount_options: ['dmode=775']
     )
 
     config.vm.provision :chef_solo do |chef|
         chef.cookbooks_path = 'cookbooks'
         chef.json = {
-            :run_list => %w{
+            run_list: %w(
                 nodejs
                 mongodb
-            }
+            )
         }
     end
 end
