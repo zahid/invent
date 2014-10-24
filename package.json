@@ -1,7 +1,7 @@
 {
     "name": "invent",
     "description": "Vagrant Setup Generator",
-    "version": "0.0.3",
+    "version": "0.0.5",
     "author": "Zahid Mahir <zahid@zmhr.me>",
     "repository": "git@github.com:zahid/invent.git",
     "engines": {
