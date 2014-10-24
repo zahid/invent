@@ -29,6 +29,8 @@ SSH into the VM via `vagrant ssh` from the project directory.
 ## Dependancies
 So you want to do some application development via vagrant as your environment control, first install some dependancies to get you going:
 
+Ruby v1.9 or higher is required for this to work.
+
 * [Vagrant](https://www.vagrantup.com/)
 * [VirtualBox](https://www.virtualbox.org/)
 * [Chef Development Kit](http://downloads.getchef.com/chef-dk/)

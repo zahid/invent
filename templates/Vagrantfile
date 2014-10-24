@@ -6,31 +6,28 @@ ip = '192.168.111.111'
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  config.vm.box = box
-  config.vm.box_url = box_url
-  config.berkshelf.berksfile_path = './Berksfile'
-  config.omnibus.chef_version = :latest
-  config.vm.network :private_network, ip: ip
-  config.vm.hostname = "local.#{name}"
+    config.berkshelf.berksfile_path = './Berksfile'
+    config.omnibus.chef_version = :latest
+    config.vm.box = box
+    config.vm.box_url = box_url
+    config.vm.hostname = "local.#{name}"
+    config.vm.network :private_network, ip: ip
 
-  config.vm.provider :virtualbox do |vb|
-    vb.name = name
-  end
+    config.vm.provider :virtualbox do |vb|
+        vb.name = name
+    end
 
-  config.vm.synced_folder(
-    '.',
-    "/home/vagrant/#{name}",
-    owner: 'vagrant',
-    mount_options: ['dmode=775']
+    config.vm.synced_folder(
+        '.',
+        "/home/vagrant/#{name}",
+        owner: 'vagrant',
+        mount_options: ['dmode=775']
     )
 
-  config.vm.provision :chef_solo do |chef|
-    chef.cookbooks_path = 'cookbooks'
-    chef.json = {
-      run_list: %w(
-        nodejs
-        mongodb
-      )
-    }
-  end
+    config.vm.provision :chef_solo do |chef|
+        chef.run_list = %w(
+            nodejs
+            mongodb
+        )
+    end
 end
