@@ -1,1 +1,8 @@
-var invent = require('./invent.js');
+var Invent = require('./invent.js');
+
+var opts = {
+	name : 'brittney'
+};
+
+var i = new Invent(opts);
+i.create()

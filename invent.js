@@ -1,8 +1,11 @@
 var fs = require('fs');
 var path = require('path');
+var mkdirp = require('mkdirp');
 
-exports = module.exports = new Invent();
-exports.invent = Invent;
+var pkg = require('./package.json');
+var version = pkg.version;
+
+exports = module.exports = Invent;
 
 function Invent(options) {
     options || (options = {});
@@ -10,24 +13,16 @@ function Invent(options) {
     this.destination = options.name || '.';
     this.color = options.color || true;
     this.force = options.force || false;
-    this.templatePath = path.join(__dirname, '..', 'templates');
+    this.templatePath = path.join(__dirname, 'templates');
 };
 
-function isEmpty(path, cb) {
-    fs.readdir(path, function (err, files) {
-        if (err && 'ENOENT' !== err.code) {
-            throw err;
-        }
-        cb(!files || !files.length);
-    });
-};
-
-Invent.prototype.create = function (destination) {
+Invent.prototype.create = function () {
+    var self = this;
     process.on('exit', function (code) {
         if (code === 0) {
             console.log();
             console.log(' getting started :');
-            console.log(' $ cd ' + destination + ' && vagrant up');
+            console.log(' $ cd ' + this.destination + ' && vagrant up');
             console.log(' $ vagrant ssh');
             console.log();
             if (this.color) {
@@ -38,10 +33,10 @@ Invent.prototype.create = function (destination) {
             console.log();
         }
     });
-    mkdir(destination, function () {
-        writeTemplate('Vagrantfile');
-        writeTemplate('package.json');
-        writeTemplate('Berksfile');
+    this.mkdir(this.destination, function () {
+        self.writeTemplate('Vagrantfile');
+        self.writeTemplate('package.json');
+        self.writeTemplate('Berksfile');
     });
 };
 
@@ -54,23 +49,33 @@ Invent.prototype.write = function (destination, content, mode) {
     }
 };
 
-Invent.prototype.writeTemplate = function (template) {
-    var template = fs.readFileSync(
-            path.join(templatePath, template), 'utf-8'
-        ).replace('{appName}', this.appName);
-    write(path.join(destinationPath, template), template);
+function isEmpty(destination, cb) {
+    fs.readdir(destination, function (err, files) {
+        if (err && 'ENOENT' !== err.code) {
+            throw err;
+        }
+        cb(!files || !files.length);
+    });
 };
 
-Invent.prototype.mkdir = function (path, cb) {
-    mkdirp(path, 0755, function (err) {
+Invent.prototype.mkdir = function (destination, cb) {
+    mkdirp(destination, 0755, function (err) {
     if (err) {
         throw err;
     }
-    if (program.color) {
+    if (this.color) {
         console.log(' \033[36mcreated\033[0m : ' + path);
     } else {
         console.log(' created : ' + path);
     }
     cb && cb();
     });
-}
+};
+
+Invent.prototype.writeTemplate = function (template) {
+    var template = fs.readFileSync(
+            path.join(this.templatePath, template), 'utf-8'
+        ).replace('{appName}', this.appName);
+    this.write(path.join(this.destination, template), template);
+};
+
