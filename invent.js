@@ -19,7 +19,7 @@ Invent.prototype.create = function () {
         if (code === 0) {
             console.log();
             console.log(' getting started :');
-            console.log(' $ cd ' + this.destination + ' && vagrant up');
+            console.log(' $ cd ' + self.destination + ' && vagrant up');
             console.log(' $ vagrant ssh');
             console.log();
             if (self.color) {
