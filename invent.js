@@ -2,9 +2,6 @@ var fs = require('fs');
 var path = require('path');
 var mkdirp = require('mkdirp');
 
-var pkg = require('./package.json');
-var version = pkg.version;
-
 exports = module.exports = Invent;
 
 function Invent(options) {
@@ -25,7 +22,7 @@ Invent.prototype.create = function () {
             console.log(' $ cd ' + this.destination + ' && vagrant up');
             console.log(' $ vagrant ssh');
             console.log();
-            if (this.color) {
+            if (self.color) {
                 console.log(' \x1b[36mstart inventing ;)\x1b[0m');
             } else {
                 console.log(' start inventing ;)');
@@ -40,6 +37,27 @@ Invent.prototype.create = function () {
     });
 };
 
+Invent.prototype.mkdir = function (destination, cb) {
+    mkdirp(destination, 0755, function (err) {
+    if (err) {
+        throw err;
+    }
+    if (this.color) {
+        console.log(' \033[36mcreated\033[0m : ' + destination);
+    } else {
+        console.log(' created : ' + destination);
+    }
+    cb && cb();
+    });
+};
+
+Invent.prototype.writeTemplate = function (template) {
+    var contents = fs.readFileSync(
+            path.join(this.templatePath, template), 'utf-8'
+        ).replace('{appName}', this.name);
+    this.write(path.join(this.destination, template), contents);
+};
+
 Invent.prototype.write = function (destination, content, mode) {
     fs.writeFile(destination, content, { mode: mode || 0666 });
     if (this.color) {
@@ -48,34 +66,3 @@ Invent.prototype.write = function (destination, content, mode) {
         console.log(' created : ' + destination);
     }
 };
-
-function isEmpty(destination, cb) {
-    fs.readdir(destination, function (err, files) {
-        if (err && 'ENOENT' !== err.code) {
-            throw err;
-        }
-        cb(!files || !files.length);
-    });
-};
-
-Invent.prototype.mkdir = function (destination, cb) {
-    mkdirp(destination, 0755, function (err) {
-    if (err) {
-        throw err;
-    }
-    if (this.color) {
-        console.log(' \033[36mcreated\033[0m : ' + path);
-    } else {
-        console.log(' created : ' + path);
-    }
-    cb && cb();
-    });
-};
-
-Invent.prototype.writeTemplate = function (template) {
-    var template = fs.readFileSync(
-            path.join(this.templatePath, template), 'utf-8'
-        ).replace('{appName}', this.appName);
-    this.write(path.join(this.destination, template), template);
-};
-
