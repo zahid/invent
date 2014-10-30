@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 
 var program = require('commander');
-var mkdirp = require('mkdirp');
-var fs = require('fs');
-var path = require('path');
-var pkg = require('../package.json');
+var invent = require('../index.js');
 
 program
     .usage('[options] [destination]')
@@ -12,125 +9,10 @@ program
     .option('--no-color', 'no colored output')
     .parse(process.argv);
 
-var destinationPath = program.args.shift() || '.';
-var appName = (destinationPath !== '.') ? destinationPath : 'invent';
+var options = {
+    name: program.args.shift() || '.',
+    color: program.color,
+    force: program.force
+};
 
-var templatePath = path.join(__dirname, '..', 'templates');
-
-isEmpty(destinationPath, function (empty){
-    if (empty || program.force) {
-        inventApp(destinationPath);
-    } else {
-        console.log('Destination folder is not empty, use `--force` to force');
-        abort('Aborting', 1);
-    }
-});
-
-/**
- * Create application at the given directory `applicationPath`.
- *
- * @param {String} applicationPath
- */
-
-function inventApp(applicationPath) {
-    process.on('exit', function (code){
-        if (code === 0) {
-            console.log();
-            console.log('   getting started :');
-            console.log('     $ cd ' + applicationPath + ' && vagrant up');
-            console.log('     $ vagrant ssh');
-            console.log();
-            if (program.color) {
-                console.log('   \x1b[36mstart inventing ;)\x1b[0m');
-            } else {
-                console.log('   start inventing ;)');
-            }
-            console.log();
-        }
-    });
-
-    mkdir(applicationPath, function (){
-        writeTemplate('Vagrantfile');
-        writeTemplate('package.json');
-        writeTemplate('Berksfile');
-    });
-}
-
-/**
- * Writes the specified templates
- *
- * @param {String} template
- */
-
-function writeTemplate(template) {
-    var templateContent = fs.readFileSync(
-        path.join(templatePath, template), 'utf-8'
-    ).replace('{appName}', appName);
-    write(path.join(destinationPath, template), templateContent);
-} 
-
-/**
- * Check if the given directory `path` is empty.
- *
- * @param {String} path
- * @param {Function} fn
- */
-
-function isEmpty(path, fn) {
-    fs.readdir(path, function (err, files){
-        if (err && 'ENOENT' != err.code) {
-            throw err;
-        }
-        fn(!files || !files.length);
-    });
-}
-
-/**
- * echo str > path.
- *
- * @param {String} path
- * @param {String} str
- * @param {String} mode
- */
-
-function write(path, str, mode) {
-    fs.writeFile(path, str, { mode: mode || 0666 });
-    if (program.color) {
-        console.log('   \x1b[36mcreated\x1b[0m    : ' + path);
-    } else {
-        console.log('   created    : ' + path);
-    }
-}
-
-/**
- * Mkdir -p.
- *
- * @param {String} path
- * @param {Function} fn
- */
-
-function mkdir(path, cb) {
-    mkdirp(path, 0755, function (err){
-        if (err) {
-            throw err;
-        }
-        if (program.color) {
-            console.log('   \033[36mcreated\033[0m    : ' + path);
-        } else {
-            console.log('   created    : ' + path);
-        }
-        cb && cb();
-    });
-}
-
-/**
- * Abort everything
- *
- * @param {String} str
- * @param {Number} code
- */
-
-function abort(str, code) {
-    console.error(str);
-    process.exit(code);
-}
+invent.create(options);
