@@ -2,18 +2,18 @@ var fs = require('fs');
 var path = require('path');
 var mkdirp = require('mkdirp');
 
-exports = module.exports = Invent;
+exports = module.exports = new Invent();
 
-function Invent(options) {
+function Invent() {
+    this.templatePath = path.join(__dirname, 'templates');
+};
+
+Invent.prototype.create = function (options) {
     options || (options = {});
     this.name = options.name || 'invent';
     this.destination = options.name || '.';
     this.color = options.color || true;
     this.force = options.force || false;
-    this.templatePath = path.join(__dirname, 'templates');
-};
-
-Invent.prototype.create = function () {
     var self = this;
     process.on('exit', function (code) {
         if (code === 0) {
