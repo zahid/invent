@@ -31,9 +31,9 @@ Invent.prototype.create = function (options) {
         }
     });
     this.mkdir(this.destination, function () {
-        self.writeTemplate('Vagrantfile');
-        self.writeTemplate('package.json');
-        self.writeTemplate('Berksfile');
+        self.write('Vagrantfile');
+        self.write('package.json');
+        self.write('Berksfile');
     });
 };
 
@@ -51,18 +51,14 @@ Invent.prototype.mkdir = function (destination, cb) {
     });
 };
 
-Invent.prototype.writeTemplate = function (template) {
+Invent.prototype.write = function (template) {
     var contents = fs.readFileSync(
             path.join(this.templatePath, template), 'utf-8'
         ).replace('{appName}', this.name);
-    this.write(path.join(this.destination, template), contents);
-};
-
-Invent.prototype.write = function (destination, content, mode) {
-    fs.writeFile(destination, content, { mode: mode || 0666 });
+    fs.writeFile(path.join(this.destination, template), contents, { mode: 0666 });
     if (this.color) {
-        console.log(' \x1b[36mcreated\x1b[0m : ' + destination);
+        console.log(' \x1b[36mcreated\x1b[0m : ' + path.join(this.destination, template));
     } else {
-        console.log(' created : ' + destination);
+        console.log(' created : ' + path.join(this.destination, template));
     }
 };
