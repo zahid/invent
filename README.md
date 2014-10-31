@@ -83,7 +83,7 @@ console.log("Server running at http://127.0.0.1:80/");
 * From the host machine, visit - `192.168.111.111`
 
 ## API
-To access the API, check out the [bin/invent](blob/master/bin/invent) file for a primer.
+To access the API, check out the [bin/invent](bin/invent) file for a primer.
 
 ### Class Invent
 Main class for the Invent module
