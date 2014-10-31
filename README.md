@@ -1,13 +1,13 @@
 invent
 ==============
-###### start your own invention.
 
+###### start your own invention.
 [![Build Status](https://travis-ci.org/zahid/invent.svg?branch=master)](https://travis-ci.org/zahid/invent)
 
 This is a tool to jumpstart your Node.js development in conjunction with MongoDB.
 Similar to the other generator tools out there, this is a vagrant environment generator.
-## tl;dr
 
+## tl;dr
 Install
 
 * [Vagrant](https://www.vagrantup.com/)
