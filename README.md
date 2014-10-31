@@ -26,8 +26,8 @@ $ cd my_app && vagrant up
 
 SSH into the VM via `vagrant ssh` from the project directory. 
 
-## Dependancies
-So you want to do some application development via vagrant as your environment control, first install some dependancies to get you going:
+## Dependencies
+So you want to do some application development via vagrant as your environment control, first install some dependencies to get you going:
 
 Ruby v1.9 or higher is required for this to work.
 
@@ -82,7 +82,24 @@ console.log("Server running at http://127.0.0.1:80/");
 * From the guest machine, run the app - `sudo node app.js` 
 * From the host machine, visit - `192.168.111.111`
 
-## Issues:
+## API
+To access the API, check out the [bin/invent](blob/master/bin/invent) file for a primer.
+
+### Class Invent
+Main class for the Invent module
+
+### Invent.create([options])
+Triggers the invent class to create a new project
+
+`@options`- possible fields:
+
+`name`: String- name of project to build. Default ```'invent'```
+
+`color`: Boolean- specify color output. Default ```true```
+
+`force`: Boolean- force generation on non-empty directory. Default ```false```
+
+## Issues
 There is a known issue with Chef Development Kit installation in regards to Nokogiri on OSX, the Nokogiri team has the solution documented [here](http://www.nokogiri.org/tutorials/installing_nokogiri.html)
 
 
